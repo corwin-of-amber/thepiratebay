@@ -95,13 +95,17 @@ export function convertOrderByObject(orderByObject: Object = defaultOrder) {
 /**
  * Helper method for parsing page numbers
  */
-function castNumberToString(pageNumber?: number | string): string {
+function castNumberToString(pageNumber?: number | string | number[]): string {
   if (typeof pageNumber === 'number') {
     return String(pageNumber);
   }
 
   if (typeof pageNumber === 'string') {
     return pageNumber;
+  }
+
+  if (typeof pageNumber === 'object' && pageNumber.length) {
+    return String(pageNumber);
   }
 
   if (
@@ -117,7 +121,7 @@ function castNumberToString(pageNumber?: number | string): string {
 /**
  * Determine the category number from an category name ('movies', 'audio', etc)
  */
-function resolveCategory(categoryParam: number | string, defaultCategory: number): number {
+function resolveCategory(categoryParam /*: number | string | (number | string)[]*/, defaultCategory: number): number {
   if (typeof categoryParam === 'number') {
     return categoryParam;
   }
@@ -126,6 +130,10 @@ function resolveCategory(categoryParam: number | string, defaultCategory: number
     if (categoryParam in primaryCategoryNumbers) {
       return primaryCategoryNumbers[categoryParam];
     }
+  }
+
+  if (typeof categoryParam === 'object' && categoryParam.length) {
+    return categoryParam.map(resolveCategory);
   }
 
   return defaultCategory;
@@ -151,12 +159,15 @@ export function search(title: string = '*', opts: Object = {}) {
 
   const orderingNumber = convertOrderByObject({ orderBy, sortBy });
 
+    /*
   const url = `${baseUrl}/s/?${querystring.stringify({
     q: title,
     category,
     page,
     orderby: orderingNumber
   })}`;
+    */
+  const url = `${baseUrl}/search/${title}/0/99/${category}`;
 
   return parsePage(url, parseResults, rest.filter);
 }
